@@ -44,7 +44,9 @@
 			.trim()
 			.toLowerCase()
 			.concat(items.lastName.trim().toLowerCase());
-		const userPayload = { userName, password };
+		const avatarId = '';
+		const pdfId = '';
+		const userPayload = { userName, password, avatarId, pdfId };
 		console.log(userPayload);
 		const resp = await axios.post('http://localhost:4000/api/users', userPayload);
 		console.log(resp);

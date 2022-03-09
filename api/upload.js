@@ -24,16 +24,6 @@ const storage = new GridFsStorage({
 	}
 });
 
-// const storage = multer.diskStorage({
-// 	destination: function (req, file, cb) {
-// 		cb(null, 'uploads');
-// 	},
-// 	filename: function (req, file, cb) {
-// 		console.log(req.file);
-// 		cb(null, file.fieldname + '-' + req.params._id);
-// 	}
-// });
-
 const upload = multer({ storage: storage });
 
 module.exports = upload;

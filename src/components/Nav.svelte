@@ -1,5 +1,14 @@
 <script>
-	import { userStore } from '../stores/userStore';
+	import { userStore, tokenStore } from '../stores/userStore';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+
+	function handleSignout() {
+		tokenStore.set('');
+		userStore.set('');
+		location.reload();
+	}
 </script>
 
 <div class="container">
@@ -23,7 +32,7 @@
 			<a href="/signin" class="link">Sign In</a>
 		</li>
 		<li>
-			<a class="link">Sign Out</a>
+			<a class="link" on:click={() => handleSignout()}>Sign Out</a>
 		</li>
 	</ul>
 </div>

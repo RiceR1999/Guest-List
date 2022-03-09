@@ -5,12 +5,26 @@ const mongoURL =
 	'mongodb+srv://ryanrice:320587rRd%40@cluster0.o8eyc.mongodb.net/userAPI?retryWrites=true&w=majority';
 const mongoose = require('mongoose');
 const conn = mongoose.createConnection(mongoURL);
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-function routes(User, UserFile) {
+function routes(User) {
 	const userRouter = express.Router();
 
 	let gfs;
 	let gridfsBucket;
+
+	function authenticateToken(req, res, next) {
+		const authHeader = req.headers['authorization'];
+		const token = authHeader && authHeader.split(' ')[1];
+		if (token == null) return res.sendStatus(401);
+
+		jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+			if (err) return res.sendStatus(403);
+			req.user = user;
+			next();
+		});
+	}
 
 	conn.once('open', () => {
 		gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -20,7 +34,7 @@ function routes(User, UserFile) {
 		gfs.collection('uploads');
 	});
 
-	userRouter.route('/users').get((req, res) => {
+	userRouter.route('/users').get(authenticateToken, (req, res) => {
 		User.find((err, users) => {
 			if (err) {
 				return res.send(err);
@@ -30,9 +44,31 @@ function routes(User, UserFile) {
 		});
 	});
 
+	userRouter.route('/user/pdf/:_id').post(upload.single('file'), (req, res, next) => {
+		if (!req.file) {
+			const error = new Error('Please upload a file');
+			error.httpStatusCode = 400;
+			return next(error);
+		} else {
+			User.updateOne(
+				{ _id: req.params._id },
+				{
+					$set: {
+						pdfId: req.file.filename
+					}
+				},
+				(err, result) => {
+					if (err) {
+						return res.send(err);
+					} else {
+						return res.json(result);
+					}
+				}
+			);
+		}
+	});
+
 	userRouter.route('/user/:_id').post(upload.single('file'), (req, res, next) => {
-		const _id = mongoose.Types.ObjectId(req.params._id);
-		console.log(_id);
 		if (!req.file) {
 			const error = new Error('Please upload a file');
 			error.httpStatusCode = 400;
@@ -56,6 +92,23 @@ function routes(User, UserFile) {
 		}
 	});
 
+	userRouter.route('/pdf/:filename').get((req, res) => {
+		gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+			if (!file || file.length === 0) {
+				return res.status(404).json({
+					err: 'No files exist'
+				});
+			}
+			if (file.contentType === 'application/pdf') {
+				const readstream = gridfsBucket.openDownloadStream(file._id);
+				readstream.pipe(res);
+			} else {
+				res.status(404).json({
+					err: 'Not an image'
+				});
+			}
+		});
+	});
 	userRouter.route('/image/:filename').get((req, res) => {
 		gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
 			if (!file || file.length === 0) {
@@ -94,12 +147,14 @@ function routes(User, UserFile) {
 			if (error) {
 				return res.send(error);
 			} else {
-				return res.json(result);
+				console.log(result);
+				const accessToken = jwt.sign(result.toJSON(), process.env.ACCESS_TOKEN_SECRET);
+				return res.json({ accessToken: accessToken, _id: result._id });
 			}
 		});
 	});
 
-	userRouter.route('/user/:_id').get((req, res) => {
+	userRouter.route('/user/:_id').get(authenticateToken, (req, res) => {
 		User.findOne({ _id: req.params._id }, (err, result) => {
 			if (err) {
 				return res.send(err);
@@ -109,7 +164,16 @@ function routes(User, UserFile) {
 		});
 	});
 
-	userRouter.route('/delete/:_id').delete((req, res) => {
+	userRouter.route('/delete/:_id').delete(authenticateToken, (req, res) => {
+		User.findOne({ _id: req.params._id }, (err, result) => {
+			console.log(res.json(result));
+			if (err) {
+				return res.send(err);
+			} else {
+				gfs.files.remove({ filename: result.pdfId });
+				gfs.files.remove({ filename: result.avatarId });
+			}
+		});
 		User.remove({ _id: req.params._id }, (err, result) => {
 			if (err) {
 				return res.send(err);
@@ -118,6 +182,7 @@ function routes(User, UserFile) {
 			}
 		});
 	});
+
 	return userRouter;
 }
 

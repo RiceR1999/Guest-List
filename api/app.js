@@ -7,11 +7,10 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 4000;
 const User = require('./models/userModel');
-const UserFile = require('./models/userFileModel');
 const dbUrl =
 	'mongodb+srv://ryanrice:320587rRd%40@cluster0.o8eyc.mongodb.net/userAPI?retryWrites=true&w=majority';
 const db = mongoose.connect(dbUrl);
-const userRouter = require('./routes/userRouter.js')(User, UserFile);
+const userRouter = require('./routes/userRouter.js')(User);
 
 app.use(cors());
 

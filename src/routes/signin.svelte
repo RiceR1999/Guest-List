@@ -2,12 +2,11 @@
 	import axios from 'axios';
 	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { userStore } from '../stores/userStore';
+	import { tokenStore, userStore } from '../stores/userStore';
 
 	let user = { username: '', password: '' };
 	let errors = { username: '', password: '', signin: '' };
 	let valid = false;
-	const dispatch = createEventDispatcher();
 
 	async function submitHandler() {
 		if (user.username.trim().length < 1) {
@@ -37,9 +36,16 @@
 			} else {
 				errors.signin = '';
 				valid = true;
-				userStore.set(resp.data.userName);
-				console.log(resp.data.userName);
-				console.log(userStore);
+				//TODO: get user via token and set userStore
+				// userStore.set(resp.data.userName);
+				console.log(resp.data);
+				tokenStore.set(resp.data.accessToken);
+				const user = await axios.get(`http://localhost:4000/api/user/${resp.data._id}`, {
+					headers: { Authorization: `Bearer ${$tokenStore}` }
+				});
+				console.log(user.data);
+				userStore.set(user.data.userName);
+				console.log($tokenStore);
 				goto('/');
 			}
 		}

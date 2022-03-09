@@ -2,12 +2,13 @@
 	"name": "guest-list",
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "svelte-kit dev",
+		"dev": "svelte-kit dev ",
 		"build": "svelte-kit build",
 		"package": "svelte-kit package",
 		"preview": "svelte-kit preview",
 		"lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
-		"format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
+		"format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. .",
+		"localtunnel": "lt --port 3000"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
@@ -23,7 +24,8 @@
 	},
 	"dependencies": {
 		"axios": "^0.26.0",
-		"svelte-navigator": "^3.1.5"
+		"svelte-navigator": "^3.1.5",
+		"localtunnel": "^2.0.2"
 	},
 	"type": "module"
 }
