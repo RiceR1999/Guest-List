@@ -79,6 +79,9 @@ function routes(User) {
 				{
 					$set: {
 						avatarId: req.file.filename
+					},
+					$push: {
+						files: req.file.filename
 					}
 				},
 				(err, result) => {

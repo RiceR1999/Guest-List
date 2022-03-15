@@ -5,7 +5,8 @@ const userModel = new Schema({
 	userName: { type: String },
 	password: { type: String },
 	avatarId: { type: String },
-	pdfId: { type: String }
+	pdfId: { type: String },
+	files: [String]
 });
 
 module.exports = mongoose.model('User', userModel);
