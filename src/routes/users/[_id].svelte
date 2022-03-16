@@ -24,6 +24,7 @@
 	let fileinput;
 	let avatar;
 	let open = false;
+	let uploaded = false;
 
 	onMount(async () => {
 		const res = await axios.get(`http://localhost:4000/api/user/${id}`, {
@@ -44,6 +45,7 @@
 		reader.readAsDataURL(image);
 		reader.onload = (e) => {
 			avatar = e.target.result;
+			uploaded = true;
 		};
 	};
 
@@ -68,10 +70,10 @@
 	<h1 class="pb-3">{user.userName}</h1>
 	<div id="app">
 		<h1>Upload Image</h1>
-		{#if user.avatarId}
-			<img class="avatar" src="http://localhost:4000/api/image/{user.avatarId}" alt="avatar" />
-		{:else if avatar}
+		{#if uploaded === true}
 			<img class="avatar" src={avatar} alt="avatar" />
+		{:else if user.avatarId}
+			<img class="avatar" src="http://localhost:4000/api/image/{user.avatarId}" alt="avatar" />
 		{:else}
 			<img
 				class="avatar"

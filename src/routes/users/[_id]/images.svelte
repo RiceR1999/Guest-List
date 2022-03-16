@@ -16,9 +16,16 @@
 	import { onMount } from 'svelte';
 	import { tokenStore } from '../../../stores/userStore';
 	import axios from 'axios';
+
 	export let id;
 	let open = false;
 	let user = { userName: '', password: '', _id: '', avatarId: '', pdfId: '', files: [] };
+
+	function printImg(url) {
+		var win = window.open('');
+		win.document.write('<img src="' + url + '" onload="window.print();window.close()"/>');
+		win.focus();
+	}
 
 	onMount(async () => {
 		const res = await axios.get(`http://localhost:4000/api/user/${id}`, {
@@ -40,10 +47,18 @@
 	<div id="app">
 		{#if user.files}
 			<div class="container">
-				<div class="columns-2">
+				<div class=" grid grid-cols-1 gap-4 sm:grid-cols-2">
 					{#each user.files as file}
-						<div class="avatar">
-							<img src="http://localhost:4000/api/image/{file}" alt="image" class="image" />
+						<div
+							class="avatar"
+							on:click={() => {
+								printImg(`http://localhost:4000/api/image/${file}`);
+							}}
+						>
+							<div class="flex">
+								<img src="http://localhost:4000/api/image/{file}" alt="image" class="image" />
+								<div class="pl-5">Click to print</div>
+							</div>
 						</div>
 					{/each}
 				</div>
@@ -53,18 +68,28 @@
 </div>
 
 <style>
+	.avatar:hover {
+		cursor: pointer;
+		background-color: rgba(211, 211, 211, 0.555);
+	}
 	.avatar {
+		border: 2px solid orange;
 		max-width: 200px;
 		max-height: 200px;
 		border-radius: 10px;
-		margin-left: 75px;
+		margin-left: 10vh;
 		margin-top: 5px;
 		margin-bottom: 10px;
-		border: 2px solid orange;
 		padding: 20px;
+		width: 20vh;
+		height: 10vh;
 	}
+
 	.image {
+		align-items: center;
 		max-width: 150px;
 		max-height: 150px;
+		width: 5vh;
+		height: 5vh;
 	}
 </style>

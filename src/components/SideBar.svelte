@@ -23,8 +23,6 @@
 	.open {
 		left: 0;
 		display: block;
-		/*Handle transition in*/
-		/* transition: 2s ease-in; */
 		width: 25%;
 	}
 </style>
